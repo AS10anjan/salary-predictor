@@ -61,19 +61,57 @@
 # Years_of_Experience1 = scaler.transform([[15]])
 # Years_of_Experience = Years_of_Experience1[0][0]
 
+#import streamlit as st
+#from joblib import load
+
+#model = load("linear_model.pkl")
+
+#st.title("Salary Prediction App")
+
+#Age = st.number_input("Enter age")
+#Gender = st.number_input("Enter gender (0/1)")
+#Education_Level = st.number_input("Enter education level")
+#Job_Title = st.number_input("Enter job title")
+#years = st.number_input("Enter years of experience")
+
+#if st.button("Predict"):
+ #   result = model.predict([[Age, Gender, Education_Level, Job_Title, years]])
+  #  st.success(f"Predicted Salary: {result[0]}")
+
 import streamlit as st
 from joblib import load
+import pandas as pd
+
 
 model = load("linear_model.pkl")
 
+
+df = pd.read_csv("Salary.csv")
+
+# Get unique job titles and create a mapping
+unique_job_titles = sorted(df['Job Title'].dropna().unique().tolist())
+job_title_map = {job: idx for idx, job in enumerate(unique_job_titles)}
+
 st.title("Salary Prediction App")
 
-Age = st.number_input("Enter age")
-Gender = st.number_input("Enter gender (0/1)")
-Education_Level = st.number_input("Enter education level")
-Job_Title = st.number_input("Enter job title")
-years = st.number_input("Enter years of experience")
+
+Age = st.number_input("Enter age", min_value=18, max_value=65, step=1)
+
+
+Gender = st.selectbox("Select Gender", ["Male", "Female"])
+Gender_encoded = 1 if Gender == "Male" else 0
+
+
+Education_Level = st.number_input("Enter education level", min_value=0, step=1)
+
+# Job Title as dropdown from CSV
+Job_Title_selected = st.selectbox("Select Job Title", unique_job_titles)
+Job_Title = job_title_map[Job_Title_selected]
+
+
+years = st.number_input("Enter years of experience", min_value=0, step=1)
+
 
 if st.button("Predict"):
-    result = model.predict([[Age, Gender, Education_Level, Job_Title, years]])
-    st.success(f"Predicted Salary: {result[0]}")
+    result = model.predict([[Age, Gender_encoded, Education_Level, Job_Title, years]])
+    st.success(f"Predicted Salary: ${result[0]:,.2f}")
